@@ -1,0 +1,596 @@
+<%
+//var oath = require('./routes/validate.js');
+%>
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <title>Login Pacific Design Academy Payment Services</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+	<link rel="stylesheet" href="/pda/css/style.css">
+	<script src="/pda/js/pda.js"></script>
+	
+	<link rel="stylesheet" href="/pda/css/font-awesome.css">
+	
+	
+
+
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.13.1/jquery.validate.min.js"></script>
+	
+	
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.payment/1.2.3/jquery.payment.min.js"></script>
+	
+	
+    <script type="text/javascript" src="https://js.stripe.com/v1/"></script>
+    <script type="text/javascript" src="/pda/js/cc.js"></script>
+	<style>
+		btn:hover {
+			text-decoration:none;
+			color:white;
+		}
+		
+		
+		a.btn:hover {
+			color:white;
+		}
+		
+		.float-right {
+			float: right;
+			padding: 5px 5px 5px 5px;
+		}
+		.hidden {
+			display:none;
+		}
+		
+	</style>
+	<script>
+	function navigate (event, programtype)
+	{
+		$.cookie("programtype",programtype);
+		switch (programtype)
+		{
+			case "part_time":
+			window.location.href = "/pda/parttime.html";
+			break;
+			case "fulltime":
+			window.location.href = "/pda/payment.html";
+			break;
+		}
+	}
+	</script>
+	
+	
+</head>
+
+<body ng-app="pda" ng-controller="userroles">
+
+    <div class="topnav" id="myTopnav">
+       <a href="/" class="nav-brand"><img src="https://uploads-ssl.webflow.com/57ae3a881fd32dc352ae412d/57b3969a5caf203327edb78a_PDA%20NAV%20logo%20for%20white%20bg%202016.svg" width="123" alt="" class="pdalogo"></a>
+  	
+      <a class="" href='/pda/payment.html'>Full-Time</a>
+	  <a class="" href='/pda/parttime.html'>Part-Time</a>
+	  <% if (check(user,"create") && check(user,"delete")) { %>
+	  	<a class="" href='/pda/fees.html'>Add/Edit Fees</a>
+		<a class="" href='/payments'>Payments</a>
+	  <% } %>
+      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <svg aria-hidden="true" data-prefix="far" data-icon="bars" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" title="Main Navigation" class="svg-inline--fa fa-bars fa-w-14 fa-fw fa-lg"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z" class=""></path></svg>
+	  
+      </a>
+	   <a class="float-right" href="/login.html">Logout</a>
+	  <a class="float-right" href="/changepassword">Change Password</a>
+	 
+	  
+	  
+    </div>
+
+
+
+
+	<navbar><div class="alert alert-success"><div class="container"><a href="/login.html">Logout</a>&nbsp;|&nbsp;<a class="" href='/pda/payment.html'>Full-Time</a>&nbsp;|&nbsp;<a class="" href='/pda/parttime.html'>Part-Time</a>
+<% if (check(user,"create") && check(user,"delete")) { %>
+	|&nbsp;<a class="" href='/pda/fees.html'>Add/Edit Fees</a>
+	|&nbsp;<a class="" href='/payments'>Payments</a>
+<% } %>		
+	<div style='float:right;'><%=user.name%></div></div>
+
+	
+	</div></navbar>
+	<div class="container">
+	
+	<navbar><div id="msg" class="alert alert-success"></div></navbar> 
+<% if (check(user,"create") && check(user,"delete")) { %>
+<h5>Keycode: <%=user.apikeycode%></h5>
+<h5>Name: <%=user.name%></h5>
+<h5>Login: <%=user.login%></h5>
+<% } %>
+<%
+var roles = "";
+for (var i=0; i < user.roles.length; i++)
+{
+	if (i > 0)
+	{
+		roles += ", ";
+	}
+	roles += user.roles[i].name;
+}
+%>
+<% if (check(user,"create") && check(user,"delete")) { %>
+<h5>Roles: <%=roles%></h5>
+<% } %>
+<%
+if (check(user,"create")) {
+%>
+
+<%
+}
+%>
+<%
+if (!check(user,"delete")) {
+%>
+<h3>Pacific Design Academy Payments</h3>
+<a id="fulltime" class="btn btn-default" href='/pda/payment.html'>Full-Time Registration</a>&nbsp;&nbsp;
+<a id="parttime" class="btn btn-default" href='/pda/parttime.html'>Part-Time Registration</a>
+
+<br><br>
+<table class="table table-striped">
+	<tr><td><b>Program type</b></td><td></td><td></td><td></td></tr>
+<%
+var programs = {
+	"programs": [{
+		"name": "Interior Design",
+		"value": "interior_design"
+	}, {
+		"name": "Graphic Media Design",
+		"value": "graphic_media_design"
+	}, {
+		"name": "Fashion Design",
+		"value": "fashion_design"
+	}, {
+		"name": "Photography & Imaging",
+		"value": "photography_imaging"
+	}, {
+		"name": "App. & Web Development",
+		"value": "app_web_development"
+	}, {
+		"name": "Building Technology",
+		"value": "building_technology"
+	}, {
+		"name": "Motion Picture Production",
+		"value": "motion_picture_production"
+	}, {
+		"name": "3D Animation & FX- Online",
+		"value": "3d_animation_online"
+	}, {
+		"name": "Landscape Design",
+		"value": "landscape_design"
+	}],
+	"parttime": [
+	{
+		"name": "Adobe Illustrator",
+		"value": "adobe_illustrator"
+	},
+	{
+		"name": "Adobe Illustrator II",
+		"value": "adobe_illustrator2"
+	},
+	{
+		"name": "Adobe Photoshop",
+		"value": "adobe_photoshop"
+	},
+	{
+		"name": "Digital Photography",
+		"value": "digital_photography"
+	},
+	{
+		"name": "Draping Fundamentals",
+		"value": "draping_fundamentals"
+	},
+	{
+		"name": "Fashion Illustration",
+		"value": "fashion_illustration"
+	},
+	{
+		"name": "Fashion Stylist",
+		"value": "fashion_stylist"
+	},
+	{
+		"name": "Garment Construction",
+		"value": "garment_construction"
+	},
+	{
+		"name": "Intro to Film",
+		"value": "intro_to_film"
+	},
+	{
+		"name": "Intro to Graphic Design",
+		"value": "intro_to_graphic_design"
+	},
+	{
+		"name": "Intro to Interior Design",
+		"value": "intro_to_interior_design"
+	},
+	{
+		"name": "Pattern Drafting",
+		"value": "pattern_drafting"
+	},
+	{
+		"name": "Social Media Marketing",
+		"value": "social_media_marketing"
+	},
+	{
+		"name": "Vectorworks",
+		"value": "vectorworks"
+	},
+	{
+		"name": "Web Design I",
+		"value": "web_design1"
+	}
+	]
+};
+
+
+function DisplayProgram (programtype, name)
+{
+	var arrPrograms = [];
+	if (programtype == "part_time" || programtype == "parttime")
+	{
+		arrPrograms = programs.parttime;
+	} else {
+		arrPrograms = programs.programs;
+	}
+	var str = "";
+	var vals = [];
+	if (!Array.isArray(name))
+	{
+		vals.push(name);
+	} else {
+		vals = name;
+	}
+	
+	
+	for (var v=0; v < vals.length; v++)
+	{
+		var val = vals[v];
+		
+		for (var i=0; i < arrPrograms.length; i++)
+		{
+			var program = arrPrograms[i];
+			if (val == program.value)
+			{
+				if (str.length > 0)
+				{
+					str += ",";
+				}
+				str += program.name;
+			}
+		}
+	}
+	return str;
+}
+
+function DisplayProgramType (name)
+{
+	if (name == "part_time" || name == "parttime")
+	{
+		return "Part-time (per class)";
+	}
+	
+	if (name == "fulltime")
+	{
+		return "Full-Time Registration";
+	}
+	
+	return name;
+}
+
+function totalpayments (payment)
+{
+	var total = 0.0;
+	if (payment['charges'] != null)
+	{
+		for (var i=0; i < payment.charges.length; i++)
+		{
+			total += parseFloat(payment.charges[i].data.amount);
+		}
+	}
+	return total/100;
+}
+
+console.log(user['payments']);
+var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+var total = 0.0;
+
+
+for (var i=0; i < user['payments'].length; i++)
+{
+	var payment = user.payments[i];
+	var statuscode = "UnPaid"; 
+	if (payment.statuscode != undefined)
+	{
+		statuscode = payment.statuscode;
+		if (payment.error != undefined)
+		{
+			statuscode += " (" + payment.error + ")";
+		}
+	}
+%>
+<script>
+	$("#<%=payment.programtype%>").addClass("btn-primary");
+</script>
+	<tr 
+	<% if (statuscode.indexOf('UnPaid') != -1) { 
+		if (!isNaN(payment.GRANDTOTAL))
+		{
+			total += parseFloat(payment.GRANDTOTAL - totalpayments(payment));
+		}
+	%>
+		class="clickable" onClick="navigate(event,'<%=payment.programtype%>')"
+	<% } %>
+	><td colspan="100%"><%=DisplayProgramType(payment.programtype)%> (<%=DisplayProgram(payment.programtype,payment.program)%>)</td></tr>
+	
+	<tr><td></td><td><b>Pay Date</b></td><td><b>Cost</b></td><td><b>Amount</b></td><td><b>Status</b></td></tr>
+	<tr><td>&nbsp;</td><td><%=new Date(payment.lastupdated).toLocaleDateString("en-US",options)%></td><td><%=parseFloat(payment.GRANDTOTAL).toLocaleString('de-DE', { style: 'currency', currency: 'CAD' })%></td><td><%=parseFloat(payment.GRANDTOTAL - totalpayments(payment)).toLocaleString('de-DE', { style: 'currency', currency: 'CAD' })%></td><td><%=statuscode%></td></tr>
+<%
+}
+%>
+<tr><td></td><td><b>Amount Owing:</b></td><td></td><td><b><%=total.toLocaleString('de-DE', { style: 'currency', currency: 'CAD' })%></b></td><td></td></tr>
+</table>
+
+
+
+<%
+}
+%>
+
+
+<% if (check(user,"create") && check(user,"delete")) { %>
+<center>
+<h1>List of Users in the System</h1>
+</center>
+<h3>Edit User Roles</h3>
+<table class="table table-striped">
+<tr ng-repeat="us in users track by $index">
+<td colspan="100%">
+<form id="formrole{{$index}}" method="POST" action="/api/v1/user/addrole">
+		<div class="form-group">
+			<label for="name">Name</label> <div class="float-right"><button type="button" class="btn btn-primary">{{us.login}}&nbsp;&nbsp;<span class="badge badge-light">{{$index}}</span></button></div><input class="form-control" type="input" id="name" name="name" value="{{us.name}}"/>
+			
+			<div class="hidden">
+			<label for="login">Login</label><input readonly class="form-control" type="input" id="login" name="login" value="{{us.login}}"/>
+			</div>
+			
+			<input class="form-control" type="hidden" id="id" name="id" value="{{us.id}}"/>
+			
+		    <hr>
+		       <label for="multipleSelect"> Multiple select: </label><br>
+		       <select class="form-control" name="role" id="role" multiple>
+			   		<option ng-selected="isSelected(option.id, us.roles)" ng-repeat="option in availableOptions" value="{{option.id}}">{{option.name}}</option>
+		         
+		       </select>
+			<small id="error_role" class="text-danger"></small>
+			</div>
+		<div class="form-group">
+			<button ng-click="SaveRole($event, $index)" type="submit" class="btn btn-success">Save</button>
+			<button ng-click="DeleteUser($event, $index)" type="submit" class="btn btn-danger">Delete</button>
+			<button ng-click="ResetPassword($event, $index)" type="submit" class="btn btn-warning">Reset Password</button>
+			<label class="form-label float-right">{{us.login}}</label>
+		</div>
+</form>
+</td>
+</tr>
+<tr>
+<td>&nbsp;</td></tr>
+</table>
+<% } %>
+
+
+<% 
+function check (user, action)
+{
+    var flag = false;
+	if (user.roles == undefined)
+		return;
+  for (var j=0; j < user.roles.length; j++)
+    {
+        var role = user.roles[j];
+        if (role[action] == 1) // equivalent of hard-coding role.create, role.read, role.delete, role.anything
+        {
+           flag = true;
+           return flag;
+        }
+    }
+    return flag;
+}
+%>
+
+
+
+</div>
+
+</div>
+    <script>
+		
+		function displaymsg (msg) {
+			$("#msg").show();
+			$("#msg").html(msg);
+			$("html, body").animate({ scrollTop: 0 }, "slow");
+			setTimeout(function() {
+				$("#msg").fadeOut(3000);
+			}, 10000);
+		}
+		$(document).ready(function () {
+			$("#msg").hide();
+		});
+		
+	var app = angular.module('pda', []);
+	app.controller('userroles', function($scope, $http) {
+		
+        $http.get("/api/v1/users/all")
+            .then(function(response) {
+				$scope.terms = response.data;
+			});
+			
+		$scope.TermName = function (val) {
+			var terms = $scope.terms['terms'];
+			for (var i=0; i < terms.length; i++)
+			{
+				var term = terms[i];
+				if (term.value == val)
+				{
+					val = term.name;
+				}
+			}
+		}
+		
+		
+		$scope.formatdate = function (dt)
+		{
+			return new Date(dt).toLocaleDateString("en-US");
+		}
+		$scope.getRegistrations = function (login) {
+			var url = '/api/v1/payments_' + login + '/all';
+			$http.get(url)
+			.then(function(response) {
+				$scope.payments = response.data.data['payments_' + login];
+			});
+		}
+		
+		$scope.loadpayments2 = async () => {
+		  await sleep(2000)
+		  //do stuff
+		}
+		
+		$scope.loadpayments = function (url) {
+			$http.get(url)
+			.then(function(response) {
+				console.log(response.data.data[Object.keys(response.data.data)[0]]);
+				$scope.payments.push(response.data.data[Object.keys(response.data.data)[0]]);
+				console.log($scope.payments);	
+			});
+		}
+		
+		$scope.refresh = function () {
+		        $http.get("/api/v1/users/all")
+		            .then(function(response) { 
+						if (response.data.data != undefined)
+						{
+							var everyone = response.data.data.users;
+							console.log(everyone);
+							$scope.users = everyone;
+						}
+		            });
+		};
+			$scope.isSelected = function (id, arrRoles)
+			{
+				
+				for (var i=0; i < arrRoles.length; i++)
+				{
+					var role = arrRoles[i];
+					if (role.name == id)
+					{
+						console.log(true);
+						return true;
+					}
+				}
+				return false;
+			}
+			$scope.availableOptions = [{id: "public", name: "Public"}, {id: "administrator", name:"Administrator"}];
+			$scope.SaveRole = function (e, index)
+			{
+				e.preventDefault();
+				var url = $("#formrole" + index).attr("action");
+				var method = $("#formrole" + index).attr("method");
+				var data = $("#formrole" + index).serialize();
+				
+				console.log(url);
+				console.log(method);
+				console.log(data);
+				
+				if (confirm("Are you sure you want to save role?"))
+				{
+					$.ajax({
+					  url: url,
+						method: method,
+						data: data,
+						success: function(responseData, textStatus, jqXHR) {
+							console.log(responseData);
+							displaymsg("Roles Saved!");
+						},
+						error: function(jqXHR, textStatus, errorThrown) {
+						    console.log(errorThrown);
+						}
+						}).done(function() {
+				
+						});
+				}
+			}
+			
+			$scope.ResetPassword = function (e,index)
+			{
+				e.preventDefault();
+				var url = '/api/v1/users/resetpassword/' + $("#formrole" + index).find("input#id").val();
+				console.log(url);
+				$.ajax({
+				  url: url,
+					method: "GET",
+					success: function(responseData, textStatus, jqXHR) {
+						console.log(responseData);
+								displaymsg(responseData.msg);
+								$scope.refresh();
+					            },
+					            error: function(jqXHR, textStatus, errorThrown) {
+					                console.log(errorThrown);
+					            }
+				}).done(function() {
+			
+				});
+			}
+			
+			$scope.DeleteUser = function (e, index)
+			{
+				e.preventDefault();
+				var url = $("#formrole" + index).attr("action");
+				var method = $("#formrole" + index).attr("method");
+				var data = $("#formrole" + index).serialize();
+				url = '/api/v1/users/delete';
+				console.log(url);
+				console.log(method);
+				console.log(data);
+				if (confirm("Are you sure you want to delete?"))
+				{
+					$.ajax({
+					  url: url,
+						method: method,
+						data: data,
+						success: function(responseData, textStatus, jqXHR) {
+							console.log(responseData);
+									displaymsg(responseData.msg);
+									$scope.refresh();
+						            },
+						            error: function(jqXHR, textStatus, errorThrown) {
+						                console.log(errorThrown);
+						            }
+					}).done(function() {
+				
+					});
+				}
+				
+			}
+			
+			$scope.refresh();
+});
+</script>
+
+			 
+
+</body>
+</html>
+

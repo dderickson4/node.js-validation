@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head runat="server">
+	<meta charset="utf-8">
+    <title>Login Pacific Design Academy Payment Services</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	
+	<link rel="stylesheet" href="/pda/css/style.css">
+	<script src="/pda/js/pda.js"></script>
+	
+	<link rel="stylesheet" href="/pda/css/font-awesome.css">
+	
+	
+
+
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.13.1/jquery.validate.min.js"></script>
+	
+	
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.payment/1.2.3/jquery.payment.min.js"></script>
+	
+	
+    <script type="text/javascript" src="https://js.stripe.com/v1/"></script>
+    <script type="text/javascript" src="/pda/js/cc.js"></script>
+	
+	<style>
+		btn:hover {
+			text-decoration:none;
+			color:white;
+		}
+		
+		
+		a.btn:hover {
+			color:white;
+		}
+		
+	</style>
+	<script>
+		function ShowRegistration(event) {
+			event.preventDefault();
+			$("#reg_login").val($("#login").val());
+			$("#reg_password").val($("#password").val());
+			$("#RegistrationSection").show();
+		}
+	</script>
+</head>
+
+<body ng-app="pda" ng-controller="Registration">
+	
+    <div class="topnav" id="myTopnav">
+       <a href="/" class="nav-brand"><img src="https://uploads-ssl.webflow.com/57ae3a881fd32dc352ae412d/57b3969a5caf203327edb78a_PDA%20NAV%20logo%20for%20white%20bg%202016.svg" width="123" alt="" class="pdalogo"></a>
+  	
+      
+    
+      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <svg aria-hidden="true" data-prefix="far" data-icon="bars" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" title="Main Navigation" class="svg-inline--fa fa-bars fa-w-14 fa-fw fa-lg"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z" class=""></path></svg>
+	  
+      </a>
+	  <a href="#" class="float-right"><h3>Pacific Design Academy Payments</h3></a>
+    </div>
+
+	
+	
+	<navbar><div id="msg" class="alert alert-success"><%=msg%></div></navbar> 
+    <div class="container">
+        <h3>Login Form Examples</h3>
+        <div class="container">
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label for="email">Email address:</label>
+                    <input autocomplete="off" type="email" class="form-control" id="login" name="login" value="" PlaceHolder="email@pda.com">
+                </div>
+                <div class="form-group">
+                    <label for="pwd">Password:</label>
+                    <input autocomplete="off" type="password" class="form-control" id="password" name="password" PlaceHolder="Password">
+                </div>
+				<div class="form-group">
+                	<button type="submit" class="btn btn-default">Submit</button>
+					<button onclick='javascript:ShowRegistration(event);' id="btnRegisterShow" class="btn btn-default">Register</button>
+				</div>
+            </form>
+        </div>
+		<br>
+        <div id="RegistrationSection" class="container" style="display:block;">
+			<h4>Registration</h4>
+            <form id="formRegistration" action="/api/v1/users/registration" method="POST">
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input autocomplete="off" type="text" class="form-control" id="reg_name" name="reg_name" PlaceHolder="First Name Last Name">
+					<div id="error_reg_name" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email address:</label>
+                    <input autocomplete="off" type="email" class="form-control" id="reg_login" name="reg_login" PlaceHolder="email@pda.com">
+					<div id="error_reg_login" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label for="pwd">Password:</label>
+                    <input autocomplete="off" type="password" class="form-control" id="reg_password" name="reg_password" >
+					<div id="error_reg_password" class="text-danger"></div>
+                </div>
+				<div class="form-group">
+                	<button ng-click="Register($event)" id="btnRegister" type="submit" class="btn btn-default">Register</button>
+				</div>
+            </form>	
+        </div>
+		<br><br><br><br>
+		
+        
+		
+    </div>
+	
+	    <script>
+			
+			$(document).ready(function () {
+				$("#RegistrationSection").hide();
+			});
+			var app = angular.module('pda', []);
+		
+			app.controller('Registration', function($scope, $http) {
+	            
+				$scope.Register = function (event) {
+					event.preventDefault();
+					var url = $("#formRegistration").attr("action");
+					var method = $("#formRegistration").attr("method");
+					var data = $("#formRegistration").serialize();
+					console.log(url);
+					console.log(method);
+					console.log(data);
+					$.ajax({
+					  url: url,
+						method: method,
+						data: data,
+						success: function(responseData, textStatus, jqXHR) {
+							console.log(responseData);
+							var msg = "";
+							if (responseData.statuscode == 200)
+							{
+								msg = "<strong>Success!</strong> " + responseData.data.name + " " + responseData.msg;
+								$("#RegistrationSection").hide();
+								$("#login").val(responseData.data.login);
+								$("#password").val("");
+							} else {
+								msg = "<strong>Warning!</strong> " + responseData.msg;
+								var errors = responseData.errors;
+								if (errors != undefined)
+								{
+									for (var i=0; i < errors.length; i++)
+									{
+										var error = errors[i];
+										$("#error_" + error.name).html(error.value);
+										//document.getElementById("error_" + error.name).innerHTML = error.value;
+									
+									}
+								}
+							}
+							$("#msg").html(msg);
+							$("html, body").animate({ scrollTop: 0 }, "slow");
+						            },
+						            error: function(jqXHR, textStatus, errorThrown) {
+						                console.log(errorThrown);
+						            }
+					}).done(function() {
+						
+					});
+					event.preventDefault();
+				}
+			});
+				
+		</script>
+			
+			  <div class="navbar navbar-default navbar-fixed-bottom">
+			    <div class="container">
+			      <p class="navbar-text pull-left">© 2018 - Payments Processing By David Erickson
+				  <a href="mailto:daviddouglaserickson@yahoo.com">E-Mail</a>
+				  </p>
+			      <a href="http://www.erickson.club" class="navbar-btn btn-danger btn pull-right">
+			      <span class="glyphicon glyphicon-star"></span>778.350.2371 Visit Website</a>
+			    </div>
+			  </div>
+</body>
+</html>
+

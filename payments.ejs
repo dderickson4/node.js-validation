@@ -1,0 +1,517 @@
+<%
+
+
+function enumerate (bWithRepeatingLabels, p, ret, index, titlekeys, titleindex)
+{
+	if (titleindex == undefined)
+	{
+		titleindex = -1;
+		titlekeys = [];
+	}
+	for (var key in p) {
+	    //if (p.hasOwnProperty(key)) {
+			if (typeof p[key] == "object" && p[key] != null) {
+				++index;
+
+				if (isNaN(key))
+				{
+					++titleindex;
+					titlekeys.push(key);
+				}
+				enumerate(bWithRepeatingLabels, p[key],ret, index, titlekeys, titleindex);
+			} else {
+
+				var keylabel = key + '_' + index;
+				var title = undefined;
+				if (bWithRepeatingLabels)
+				{
+					title = titlekeys[titleindex];
+					keylabel = title + '_' + key + '_' + index;
+				} else {
+					if (titleindex > -1)
+					{
+						//var title = titlekeys[titleindex];
+						title = titlekeys.pop();
+						titleindex = titlekeys.length - 1;
+					}
+					if (title != undefined)
+					{
+						keylabel = title + '_' + key + '_' + index;
+					}
+				}
+				ret[keylabel] = p[key];
+				// console.log(ret);
+			}
+	    }
+		//}
+}
+
+function stripindex (obj)
+{
+	if (obj == null)
+	{
+		return obj;
+	}
+	var arrObj = obj.split('_');
+	var ret = "";
+	if (arrObj.length > 1 && !isNaN(arrObj[arrObj.length - 1]))
+	{
+		for (var i=0; i < arrObj.length - 1; i++)
+		{
+			if (ret.length > 0)
+			{
+				ret += "_";
+			}
+			ret += arrObj[i];
+		}
+	} else {
+		ret = obj;
+	}
+	return ret;
+
+}
+
+function substring(val, l)
+{
+	var ret = "";
+	for (var i=0; i < val.length; i++)
+	{
+		var ch = val.charAt(i);
+		if (l <= i)
+		{
+			ret += ch;
+		}
+	}
+	return ret;
+}
+
+var currentyear = "";
+function getCurrentYear ()
+{
+	var dt = new Date();
+	var year = "";
+	if (dt.getYear().toString().length == 3)
+	{
+		year = parseInt("20" + dt.getYear().toString().substring(1));
+	} else {
+		year = dt.getYear();
+	}
+
+	if (year.length != 4)
+	{
+		if (year.length == 2)
+		{
+			year = "20" + year;
+		}
+	}
+	currentyear = year;
+	return year;
+}
+
+getCurrentYear();
+
+function isCurrentYear (user)
+{
+
+	var year = getCurrentYear();
+
+	console.log(year);
+	var bFound = false;
+	if (user.payments != undefined)
+	{
+		if (user.payments.length > 0)
+		{
+			for (var i=0; i < user.payments.length; i++)
+			{
+				if (parseInt(user.payments[i].created.substring(0,4)) == parseInt(year) || user.payments[i].statuscode == 'UnPaid')
+				{
+					bFound = true;
+				}
+			}
+		}
+	}
+	return bFound;
+}
+
+function filter(user)
+{
+	var year = getCurrentYear();
+	console.log(year);
+	var bFound = false;
+	if (q.q == undefined)
+	{
+		return true;
+	}
+	
+	if (q.q == null)
+	{
+		return true;
+	}
+	
+	if (user.payments != undefined)
+	{
+		if (user.payments.length > 0)
+		{
+			for (var i=0; i < user.payments.length; i++)
+			{
+				if (user.payments[i].statuscode.toLowerCase() == q.q.toLowerCase())
+				{
+					bFound = true;
+				}
+			}
+		}
+	}
+	return bFound;
+}
+
+
+function filterdate(user)
+{
+	var year = getCurrentYear();
+	console.log(year);
+	var bFound = false;
+	if (q.d1 == undefined)
+	{
+		return true;
+	}
+	
+	if (q.d1 == null)
+	{
+		return true;
+	}
+	
+	if (user.payments != undefined)
+	{
+		if (user.payments.length > 0)
+		{
+			for (var i=0; i < user.payments.length; i++)
+			{
+				try {
+					if (new Date(user.payments[i].created) >= new Date(q.d1))
+					{
+						bFound = true;
+					}
+					
+					if (q.d2 != undefined)
+					{
+						if (q.d2 != null)
+						{
+							try {
+								if (new Date(user.payments[i].created) < new Date(q.d2))
+								{
+									bFound = true;
+								} else {
+									bFound = false;
+								}
+							
+							} catch (exception) {
+							
+							}
+							
+						}
+					}
+					
+					
+	
+					
+					
+					
+				} catch (exception)
+				{
+				}
+			}
+		}
+	}
+	return bFound;
+}
+
+
+
+function totalpayments (payment)
+{
+	var total = 0.0;
+	if (payment['charges'] != null)
+	{
+		for (var i=0; i < payment.charges.length; i++)
+		{
+			total += parseFloat(payment.charges[i].data.amount);
+		}
+	}
+	return total/100;
+}
+
+var grandtotal = 0.0;
+var chargetotal = 0.0;
+var unchargedtotal = 0.0;
+%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDA Payments Report</title>
+	<meta charset="UTF-8">
+	  <meta name="description" content="Pacific Design Academy Payments Report">
+	  <meta name="keywords" content="Payment Report">
+	  <meta name="author" content="David Erickson">
+	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+	<link rel="stylesheet" href="/pda/css/style.css">
+	<script src="/pda/js/pda.js"></script>
+
+	<link rel="stylesheet" href="/pda/css/font-awesome.css">
+
+
+
+
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.13.1/jquery.validate.min.js"></script>
+
+
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.payment/1.2.3/jquery.payment.min.js"></script>
+
+
+    <script type="text/javascript" src="https://js.stripe.com/v1/"></script>
+    <script type="text/javascript" src="/pda/js/cc.js"></script>
+	<style>
+		btn:hover {
+			text-decoration:none;
+			color:white;
+		}
+
+
+		a.btn:hover {
+			color:white;
+		}
+
+		.float-right {
+			float: right;
+			padding: 5px 5px 5px 5px;
+		}
+		.hidden {
+			display:none;
+		}
+
+	</style>
+	<script>
+	function navigate (event, programtype)
+	{
+		$.cookie("programtype",programtype);
+		switch (programtype)
+		{
+			case "part_time":
+			window.location.href = "/pda/parttime.html";
+			break;
+			case "fulltime":
+			window.location.href = "/pda/payment.html";
+			break;
+		}
+	}
+	</script>
+
+
+	<script src="/pda/js/utility.js"></script>
+	<script>
+		$(document).ready(function () {
+			$("#msg").hide();
+			$("#Last Name").val("Erickson");
+		});
+
+		$("#Last Name").val("Erickson");
+
+		function starttimer() {
+			if (document.forms.length > 0)
+			{
+				setInterval(function () {
+					prepopulate();
+					submitform();
+				}, 3000);
+			}
+		}
+	</script>
+	<style>
+		.highlight {
+			background-color:red;
+		}
+	</style>
+</head>
+<body>
+
+<div ng-app="myApp" ng-controller="intro">
+
+<navbar><div id="msg" class="alert alert-success"></div></navbar>
+
+    <div class="topnav" id="myTopnav">
+       <a href="/" class="nav-brand"><img src="https://uploads-ssl.webflow.com/57ae3a881fd32dc352ae412d/57b3969a5caf203327edb78a_PDA%20NAV%20logo%20for%20white%20bg%202016.svg" width="123" alt="" class="pdalogo"></a>
+  	<a href="/login.html">Logout</a>
+
+	  	<a class="" href='/pda/fees.html'>Add/Edit Fees</a>
+		<a class="active" href='/payments'>Payments</a>
+      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <svg aria-hidden="true" data-prefix="far" data-icon="bars" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" title="Main Navigation" class="svg-inline--fa fa-bars fa-w-14 fa-fw fa-lg"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z" class=""></path></svg>
+
+      </a>
+	  <a class="float-right" href="/login.html">Logout</a>
+	  <a class="float-right" href='/login'>Dashboard</a>
+	  <a class="float-right" href='#'><%=currentyear%></a>
+
+    </div>
+
+
+
+
+<div class="container">
+<small id="information" class="text-danger">Filter Parameters: q=paid unpaid (status) d1=January 1,2019(start date) d2=<End Date> Example: /payments?q=paid&d1=January 12,2019</small>
+<table class="table table-striped">
+	<tr><td>Name</td><td>E-Mail</td><td>Payments</td></tr>
+	<% for (var i=0; i < data.users.length; i++) {
+	var user = data.users[i];
+	if (isCurrentYear(user) == true && filter(user) == true && filterdate(user) == true) {
+	%>
+	<tr><td><%=user.name%></td><td><%=user.login%></td>
+	<td>
+	<% if (user.payments != undefined) { %>
+
+	<% if (user.payments.length > 0) { %>
+	<table class='table'>
+	<tr><td style='border:1px solid black'>Date</td><td style='border:1px solid black'>Program</td><td style='border:1px solid black'>Total</td><td style='border:1px solid black'>Paid</td><td style='border:1px solid black'>Status</td><td style='border:1px solid black'>Error</td><td style='border:1px solid black'>Other</td></tr>
+	 <% for (var p=0; p < user.payments.length; p++) {
+
+
+			var payment = user.payments[p];
+	%>
+	<script>
+	var charge = '<%=JSON.stringify(payment.id)%>';
+	//var j = JSON.parse(charge);
+	console.log(charge);
+	</script>
+	<%
+			var index = 0;
+			var ret = {};
+			enumerate(true, payment,ret,index);
+			if (!isNaN(payment.GRANDTOTAL) && payment.statuscode != 'UnPaid')
+			{
+				grandtotal += parseFloat(payment.GRANDTOTAL);
+			}
+
+			if (!isNaN(payment.GRANDTOTAL) && payment.statuscode == 'UnPaid')
+			{
+				unchargedtotal += parseFloat(payment.GRANDTOTAL);
+			}
+
+			var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+	 %>
+	 <td style='border:1px solid black'><%=new Date(payment.created).toLocaleDateString("en-US", options)%></td>
+	 	<td style='border:1px solid black'><%=payment.program%></td>
+		<td style='border:1px solid black'><%=parseFloat(payment.GRANDTOTAL).toLocaleString('de-DE', { style: 'currency', currency: 'CAD' })%></td>
+		<td style='border:1px solid black'><%=parseFloat(totalpayments(payment)).toLocaleString('de-DE', { style: 'currency', currency: 'CAD' })%></td>
+		<td style='border:1px solid black'><%=payment.statuscode%></td>
+		<td style='border:1px solid black'><%=payment.error%></td>
+		<td style='border:1px solid black'>
+
+			<% if (payment.charges != undefined) { %>
+				<button class="float-left btn btn-primary" onClick='$("#details_<%=i%>_<%=p%>").toggle();'><%=payment.date.substring(0,4)%>&nbsp;Details</button>
+				<div id="details_<%=i%>_<%=p%>" style='display:none'>
+					
+					UserID:<%=user.id%><br>
+					PaymentID:<%=payment.id%><br>
+					<button class='btn btn-default' onclick="setpayment('/user/<%=user.id%>/payment/<%=payment.id%>/setunpaid')">Set UnPaid</button>
+					<button class='btn btn-default' onclick="setpayment('/user/<%=user.id%>/payment/<%=payment.id%>/setpaid')">Set Paid</button>
+				<script>
+				function setpayment (url)
+				{
+					console.log(url);
+					$.ajax({url: url, success: function(result){
+					    location.reload();
+					  }});
+				}
+				</script>
+				<% for (var c=0; c < payment.charges.length; c++) {
+					var charge = payment.charges[c];
+
+
+					var datakeys = [];
+					var errorkeys = [];
+					if (charge.data != null) {
+						datakeys = Object.keys(charge.data);
+						try {
+							// amount
+							// amount_refunded
+							if (!isNaN(charge.data.amount))
+							{
+								chargetotal += parseFloat(charge.data.amount);
+							}
+						} catch (e) {}
+
+
+					}
+					if (charge.error != null) {
+						errorkeys = Object.keys(charge.error);
+					}
+					for (var d=0; d < datakeys.length; d++) {
+						var dcol = datakeys[d];
+						var dataval = charge.data[dcol];
+						if ((typeof dataval == "object") || Array.isArray(dataval)) {
+							dataval = JSON.stringify(dataval);
+						}
+
+						//dataval = typeof dataval;
+				%>
+				<% if (d==0) { %>
+					<h5>Stripe Charge Details</h5>
+				<% } %>
+					<%=dcol%>:<%=dataval%><br>
+
+				<% } // closes datakeys loop %>
+					<%
+					for (var e=0; e < errorkeys.length; e++) {
+						var ecol = errorkeys[e];
+						var errorval = charge.error[ecol];
+						if (typeof errorval == "object" || Array.isArray(errorval)) {
+							errorval = JSON.stringify(errorval);
+						}
+					%>
+					<% if (e==0) { %>
+					<h5>Stripe Error Details</h5>
+					<% } %>
+					<%=ecol%>:<%=errorval%><br>
+					<% } // closes errorkeys loop %>
+
+				<% } // closes charges loop%>
+				<% } // closes charges undefined loop%>
+
+		</td></tr>
+
+
+		<% }  // closes payments loop %>
+		<% } // closes is user current year %>
+		</table>
+		<% } // are payments length greater than zero.%>
+	<% } // closes payments undefined loop %>
+	</td>
+	</tr>
+
+
+	<% }  // closes users loop%>
+<tr><td>Stripe Total:<%=parseFloat(chargetotal).toLocaleString('de-DE', { style: 'currency', currency: 'CAD' })%></td><td align="right">Grand Total</td>
+<td>
+	<%=grandtotal%><span style='float:right;'>UnPaid:&nbsp;&nbsp;<%=parseFloat(unchargedtotal).toLocaleString('de-DE', { style: 'currency', currency: 'CAD' })%></span>
+</td>
+</tr>
+</table>
+
+</div> <!-- ends container tag !-->
+</div> <!-- ends controller tag !-->
+<script>
+	$(document).ready (function () {
+
+	});
+</script>
+<script src="/pda/js/standardform.js"></script>
+</body>
